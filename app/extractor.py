@@ -3,7 +3,7 @@
 import logging
 from typing import Any, Dict, List, Optional, Set
 from app.escalation import evaluate_escalation
-from app.llm import LLMProvider
+from app.llm import LLMProvider, PermanentLLMError
 from app.schemas import ExtractResponse, Finding, FindingValue, SignId
 
 logger = logging.getLogger(__name__)
@@ -78,6 +78,8 @@ class SymptomExtractor:
                         f"LLM output must be a list of findings, got {type(raw_findings).__name__}"
                     )
                 return raw_findings
+            except PermanentLLMError as exc:
+                raise ExtractionError(f"Permanent extraction error: {exc}") from exc
             except Exception as exc:
                 last_error = exc
                 logger.warning(

@@ -140,3 +140,23 @@ def test_extractor_invalid_output_retries_and_fails():
 
     assert provider.call_count == 2
     assert "LLM output must be a list" in str(exc_info.value)
+
+
+def test_extractor_permanent_error_no_retry():
+    """PermanentLLMError fails immediately without retrying."""
+    from app.llm import PermanentLLMError
+
+    message = "My cow is weak."
+    provider = MockLLMProvider(
+        sequential_responses=[
+            PermanentLLMError("API key invalid"),
+        ]
+    )
+    extractor = SymptomExtractor(provider)
+
+    with pytest.raises(ExtractionError) as exc_info:
+        extractor.process_message(message)
+
+    assert provider.call_count == 1
+    assert "Permanent extraction error" in str(exc_info.value)
+

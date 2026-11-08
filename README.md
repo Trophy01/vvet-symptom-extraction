@@ -321,13 +321,22 @@ To rigorously evaluate extraction performance in production, I would establish t
 
 ## How I Used AI Tools
 
-I used **Google Antigravity** as an AI coding assistant during this assignment. Antigravity helped:
-- Rapidly scaffold the repository structure and Pydantic schemas.
-- Generate a comprehensive offline pytest matrix covering all edge cases, escalation combinations, and mock providers.
-- Formulate the bilingual prompt instructions with appropriate Shona veterinary terms.
+I used AI coding assistants for this task, and I want to be clear about who did what.
 
-<!-- CANDIDATE NOTES: Add notes on what you changed and checked -->
-- Reviewed and refined the Pydantic schema validation to ensure invalid sign IDs and duplicate values are strictly filtered out.
-- Handled edge cases in quote matching so that case discrepancies are corrected without dropping valid findings.
-- Verified that all 42 tests run purely offline without requiring any API keys or network calls.
-- Verified that `.env` and `.venv` are strictly ignored by Git and confirmed zero secrets exist in Git history.
+**My part**
+- I designed the project structure and decided which files and modules were needed (`schemas`, `escalation`, `llm`, `extractor`, `main`, and the tests), then wrote the plan that the agents worked from.
+- I reviewed the generated code and fixed the bugs it contained.
+- After the first live run failed with a 404 because Google had retired the hardcoded Gemini model, I made the model selectable through a `GEMINI_MODEL` environment variable (with a default in `app/llm.py`).
+- [Add any other fixes you made, e.g. empty or malformed model responses now raise an error instead of returning no findings, so the service can never silently return `escalate: false` on a failure.]
+- I ran the service live against the Gemini API and [checked the sample outputs / replaced the README examples with real responses].
+
+**How the agents were set up**
+I used a tool called Herder to run three Google Antigravity agents together:
+1. An orchestrating agent. I gave it the plan, the project structure and the acceptance criteria. It managed the other two and reported the final working result back to me.
+2. A coding agent, directed by the orchestrator, that wrote the code.
+3. A testing agent that ran the tests and, once they passed, reported back to the orchestrator.
+
+**What went wrong with the AI output**
+The generated code did not work on the first live run: it used a retired model name, and some of the README claims were not accurate, so I corrected them. [Add anything else you caught.]
+
+I also used Claude (Anthropic) as a reviewing and debugging assistant outside the agent setup: to review the plan, draft the prompt I gave the agents, and talk through errors. I made the final decisions and edits myself.
